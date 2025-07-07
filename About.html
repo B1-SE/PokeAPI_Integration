@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <style>
+      /* Simple styling for the search area */
+      #pokemon-result img {
+        max-width: 120px;
+      }
+      body {
+        min-height: 100vh;
+        display: flex;
+        background-color: lightblue;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Pokémon Search</h2>
+    <input
+      type="text"
+      id="pokemon-input"
+      placeholder="Enter Pokémon name or ID"
+    />
+    <button id="search-btn">Search</button>
+    <div id="pokemon-result"></div>
+    <script>
+      document
+        .getElementById("search-btn")
+        .addEventListener("click", async function () {
+          const input = document
+            .getElementById("pokemon-input")
+            .value.trim()
+            .toLowerCase();
+          const resultDiv = document.getElementById("pokemon-result");
+          if (!input) {
+            resultDiv.textContent = "Please enter a Pokémon name or ID.";
+            return;
+          }
+          resultDiv.textContent = "Searching...";
+          try {
+            const res = await fetch(
+              `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(input)}`
+            );
+            if (!res.ok) throw new Error("Pokémon not found");
+            const data = await res.json();
+            resultDiv.innerHTML = `
+                    <h3>${
+                      data.name.charAt(0).toUpperCase() + data.name.slice(1)
+                    } (#${data.id})</h3>
+                    <img src="${data.sprites.front_default}" alt="${data.name}">
+                    <p>Type: ${data.types
+                      .map((t) => t.type.name)
+                      .join(", ")}</p>
+                `;
+          } catch (e) {
+            resultDiv.textContent =
+              "Pokémon not found. Please try another name or ID.";
+          }
+        });
+    </script>
+    <!-- ...add more content as needed... -->
+  </body>
+</html>
