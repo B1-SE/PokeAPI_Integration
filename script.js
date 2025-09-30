@@ -1,52 +1,29 @@
-const pokemonInput = document.getElementById('pokemon-input');
-const searchButton = document.getElementById('search-button');
-const pokemonInfoDiv = document.getElementById('pokemon-info');
-
-
-searchButton.addEventListener('click', () => {
-    const pokemonNameOrId = pokemonInput.value.toLowerCase();
-    if (pokemonNameOrId) {
-        fetchPokemonData(pokemonNameOrId);
+document
+  .getElementById("search-form")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault(); // Prevent form from reloading the page
+    const input = document.getElementById("pokemon-input").value.trim().toLowerCase();
+    const resultDiv = document.getElementById("pokemon-result");
+    if (!input) {
+      resultDiv.textContent = "Please enter a Pokémon name or ID.";
+      return;
     }
-});
-
-async function fetchPokemonData(nameOrId) {
-    const API_URL = `https://pokeapi.co/api/v2/pokemon/${nameOrId}`;
-
+    resultDiv.textContent = "Searching...";
     try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-            throw new Error('Error: Pokemon not found');
-        }
-        const data = await response.json();
-
-        displayPokemonInfo(data);
-
-    } catch (error) {
-        pokemonInfoDiv.innerHTML = `<p>${error.message}</p>`;
+      const res = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(input)}`
+      );
+      if (!res.ok) throw new Error("Pokémon not found");
+      const data = await res.json();
+      resultDiv.innerHTML = `
+              <h3>${
+                data.name.charAt(0).toUpperCase() + data.name.slice(1)
+              } (#${data.id})</h3>
+              <img src="${data.sprites.front_default}" alt="${data.name}">
+              <p>Type: ${data.types.map((t) => t.type.name).join(", ")}</p>
+          `;
+    } catch (e) {
+      resultDiv.textContent =
+        "Pokémon not found. Please try another name or ID.";
     }
-}
-
-function displayPokemonInfo(pokemon) {
-    // Clear previous results
-    pokemonInfoDiv.innerHTML = '';
-
-    const nameElement = document.createElement('h2');
-    nameElement.textContent = pokemon.name.toUpperCase();
-
-    const idElement = document.createElement('p');
-    idElement.textContent = `ID: #${pokemon.id}`;
-    //Bonus: Type
-    const typeElement = document.createElement('p');
-    const types = pokemon.types.map(typeInfo => typeInfo.type.name).join(', ');
-    typeElement.textContent = `Type(s): ${types}`;
-
-    const spriteElement = document.createElement('img');
-    spriteElement.src = pokemon.sprites.front_default;
-    spriteElement.alt = `${pokemon.name} sprite`;
-
-    pokemonInfoDiv.appendChild(nameElement);
-    pokemonInfoDiv.appendChild(idElement);
-    pokemonInfoDiv.appendChild(typeElement); // Bonus: Type
-    pokemonInfoDiv.appendChild(spriteElement);
-}
+  });
